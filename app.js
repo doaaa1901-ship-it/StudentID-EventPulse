@@ -7,22 +7,32 @@ const swaggerJsdoc = require('swagger-jsdoc');
 
 const app = express();
 
-// Middleware
 app.use(express.json());
 
-// Database Connection Helper for Serverless Architecture
-let cachedDb = null;
+// Database Connection Helper
+let dbError = null;
+
 const connectDB = async () => {
   if (mongoose.connection.readyState === 1) return;
-  if (process.env.MONGO_URI) {
-    if (!cachedDb) {
-      cachedDb = await mongoose.connect(process.env.MONGO_URI);
-    }
-    return cachedDb;
+
+  const uri = process.env.MONGO_URI;
+  if (!uri) {
+    dbError = 'MONGO_URI environment variable is missing on Vercel';
+    return;
+  }
+
+  try {
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000,
+    });
+    dbError = null;
+  } catch (err) {
+    dbError = err.message || String(err);
+    console.error('MongoDB Connection Error:', err);
   }
 };
 
-// Swagger Spec Setup
+// Swagger Setup
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
@@ -44,7 +54,7 @@ const swaggerDefinition = {
 
 const swaggerOptions = {
   swaggerDefinition,
-  apis: [path.join(__dirname, './routes/*.js'), path.join(__dirname, './app.js')],
+  apis: ['./routes/*.js', './app.js'], // Use simple relative paths here
   customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
   customJs: [
     'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.js',
@@ -53,33 +63,26 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-
-// Swagger Documentation Route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
 
-// Health Check Handler
+// Health Check Endpoint
 const healthHandler = async (req, res) => {
-  try {
-    await connectDB();
-  } catch (err) {
-    console.error('Database connection error during health check:', err);
-  }
+  await connectDB();
 
-  const isDbConnected = mongoose.connection.readyState === 1;
+  const isConnected = mongoose.connection.readyState === 1;
+
   res.status(200).json({
     status: 'ok',
-    database: isDbConnected ? 'connected' : 'disconnected',
+    database: isConnected ? 'connected' : 'disconnected',
+    ...(dbError && { error_details: dbError }),
     timestamp: new Date().toISOString(),
   });
 };
 
-// Root & Health Endpoint Mounting
 app.get('/', (req, res) => {
   res.status(200).json({ message: 'Welcome to StudentID-EventPulse API' });
 });
 app.get('/health', healthHandler);
 app.get('/api/v1/health', healthHandler);
-
-// Mount your routers here (e.g., app.use('/api/v1', mainRouter);)
 
 module.exports = app;
