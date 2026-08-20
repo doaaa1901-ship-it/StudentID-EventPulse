@@ -5,11 +5,14 @@ const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 
+const authRoutes = require('./routes/auth.routes');
+const eventRoutes = require('./routes/event.routes');
+const userRoutes = require('./routes/user.routes');
+
 const app = express();
 
 app.use(express.json());
 
-// Database Connection Helper
 let dbError = null;
 
 const connectDB = async () => {
@@ -37,7 +40,13 @@ const connectDB = async () => {
   }
 };
 
-// Swagger Setup
+app.use(async (req, res, next) => {
+  if (req.path.startsWith('/api/v1') && req.path !== '/api/v1/health') {
+    await connectDB();
+  }
+  next();
+});
+
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
@@ -70,7 +79,6 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
 
-// Health Check Endpoint
 const healthHandler = async (req, res) => {
   await connectDB();
 
@@ -118,5 +126,9 @@ app.get('/health', healthHandler);
  *         description: API and database status
  */
 app.get('/api/v1/health', healthHandler);
+
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/events', eventRoutes);
+app.use('/api/v1/users', userRoutes);
 
 module.exports = app;
