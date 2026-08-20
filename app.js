@@ -5,6 +5,9 @@ const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 
+// Import Routes (adjust file path if your main router is named differently)
+const mainRouter = require('./routes');
+
 const app = express();
 
 app.use(express.json());
@@ -54,7 +57,7 @@ const swaggerDefinition = {
 
 const swaggerOptions = {
   swaggerDefinition,
-  apis: ['./routes/*.js', './app.js'], // Use simple relative paths here
+  apis: ['./routes/*.js', './app.js'],
   customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
   customJs: [
     'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.js',
@@ -84,5 +87,8 @@ app.get('/', (req, res) => {
 });
 app.get('/health', healthHandler);
 app.get('/api/v1/health', healthHandler);
+
+// Mount API Routes
+app.use('/api/v1', mainRouter);
 
 module.exports = app;
