@@ -19,5 +19,5 @@ EventPulse is a real-time event management platform backend built with Node.js, 
 
 1. **Clone Repository**
    ```bash
-   git clone [https://github.com/your-username/StudentID-EventPulse.git](https://github.com/your-username/StudentID-EventPulse.git)
+   git clone [https://github.com/doaaa1901-ship-it/StudentID-EventPulse](https://github.com/doaaa1901-ship-it/StudentID-EventPulse)
    cd StudentID-EventPulse
