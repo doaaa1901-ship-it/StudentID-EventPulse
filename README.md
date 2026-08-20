@@ -18,7 +18,7 @@ EventPulse is a real-time event management platform backend built with Node.js, 
 ## Live Links
 * **Deployed API**: https://student-id-event-pulse-2cov.vercel.app
 * **API Documentation**: https://student-id-event-pulse-2cov.vercel.app/api-docs
-* **Health Check**: https://student-id-event-pulse-2cov.vercel.app/api-v1/health
+* **Health Check**: https://student-id-event-pulse-2cov.vercel.app/api/v1/health
 
 ---
 
