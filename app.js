@@ -20,7 +20,6 @@ app.use(express.json());
 app.use(mongoSanitize());
 
 // Swagger Documentation Route
-const swaggerUi = require('swagger-ui-express');
 
 const swaggerOptions = {
   customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
