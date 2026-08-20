@@ -21,6 +21,11 @@ const connectDB = async () => {
     return;
   }
 
+  if (uri.includes('127.0.0.1') || uri.includes('localhost')) {
+    dbError = 'MONGO_URI in Vercel is set to localhost (127.0.0.1). Replace it in Vercel Environment Variables with your Atlas connection string.';
+    return;
+  }
+
   try {
     await mongoose.connect(uri, {
       serverSelectionTimeoutMS: 5000,
@@ -79,14 +84,39 @@ const healthHandler = async (req, res) => {
   });
 };
 
+/**
+ * @openapi
+ * /:
+ *   get:
+ *     summary: Welcome root endpoint
+ *     responses:
+ *       200:
+ *         description: API status message
+ */
 app.get('/', (req, res) => {
   res.status(200).json({ message: 'Welcome to StudentID-EventPulse API' });
 });
-app.get('/health', healthHandler);
-app.get('/api/v1/health', healthHandler);
 
-// Mount Specific Route Files Below as needed, for example:
-// const eventRoutes = require('./routes/events');
-// app.use('/api/v1/events', eventRoutes);
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     summary: General health check
+ *     responses:
+ *       200:
+ *         description: API and database status
+ */
+app.get('/health', healthHandler);
+
+/**
+ * @openapi
+ * /api/v1/health:
+ *   get:
+ *     summary: Versioned API health check
+ *     responses:
+ *       200:
+ *         description: API and database status
+ */
+app.get('/api/v1/health', healthHandler);
 
 module.exports = app;
