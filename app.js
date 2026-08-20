@@ -7,15 +7,20 @@ const swaggerJsdoc = require('swagger-jsdoc');
 
 const app = express();
 
-// Connect to MongoDB Atlas
-if (process.env.MONGO_URI) {
-  mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB connected successfully'))
-    .catch((err) => console.error('MongoDB connection error:', err));
-}
-
 // Middleware
 app.use(express.json());
+
+// Database Connection Helper for Serverless Architecture
+let cachedDb = null;
+const connectDB = async () => {
+  if (mongoose.connection.readyState === 1) return;
+  if (process.env.MONGO_URI) {
+    if (!cachedDb) {
+      cachedDb = await mongoose.connect(process.env.MONGO_URI);
+    }
+    return cachedDb;
+  }
+};
 
 // Swagger Spec Setup
 const swaggerDefinition = {
@@ -53,7 +58,13 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
 
 // Health Check Handler
-const healthHandler = (req, res) => {
+const healthHandler = async (req, res) => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('Database connection error during health check:', err);
+  }
+
   const isDbConnected = mongoose.connection.readyState === 1;
   res.status(200).json({
     status: 'ok',
