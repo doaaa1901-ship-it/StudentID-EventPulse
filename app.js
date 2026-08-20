@@ -5,11 +5,11 @@ const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 
-// 1. Import Router Files
-// (Uncomment these as you create the files inside your ./routes/ folder)
-// const authRoutes = require('./routes/auth.routes');
-// const eventRoutes = require('./routes/event.routes');
-// const userRoutes = require('./routes/user.routes');
+// Route Imports
+const authRoutes = require('./routes/auth.routes');
+const eventRoutes = require('./routes/events.routes');
+const registrationRoutes = require('./routes/registrations.routes');
+const announcementRoutes = require('./routes/announcements.routes');
 
 const app = express();
 
@@ -43,7 +43,7 @@ const connectDB = async () => {
   }
 };
 
-// Middleware: Automatically ensure DB is connected for API calls
+// Middleware: Auto-connect DB for API calls
 app.use(async (req, res, next) => {
   if (req.path.startsWith('/api/v1') && req.path !== '/api/v1/health') {
     await connectDB();
@@ -133,10 +133,10 @@ app.get('/health', healthHandler);
  */
 app.get('/api/v1/health', healthHandler);
 
-// 2. Mount API Routes
-// (Uncomment these once your route files are created)
-// app.use('/api/v1/auth', authRoutes);
-// app.use('/api/v1/events', eventRoutes);
-// app.use('/api/v1/users', userRoutes);
+// Mounted API Routes
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/events', eventRoutes);
+app.use('/api/v1/registrations', registrationRoutes);
+app.use('/api/v1/announcements', announcementRoutes);
 
 module.exports = app;
